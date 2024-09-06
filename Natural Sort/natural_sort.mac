@@ -1,0 +1,58 @@
+lista : [38, 27, 43, 3, 9, 82, 10];
+
+merge(lista1, lista2):= block(
+	if lista1 = [] then
+		lista2
+	elseif lista2=[] then
+		lista1
+	elseif (first(lista1) <= first(lista2)) then
+		cons(first(lista1), merge(rest(lista1), lista2))
+	else
+		cons(first(lista2), merge(lista1, rest(lista2)))
+);
+
+partir(p, lista):=block(
+	[],
+	[firstn(lista,p),
+	rest(lista,p)]
+);
+
+natural(lista) := block(
+	[res, lista_temporal, numero],
+	if lista = [] then
+		[]
+	elseif length(lista) = 1 then
+		[lista]
+	else(
+		res:[],
+		numero : first(lista),
+		lista_temporal: [numero],
+		for i : 2 thru length(lista) do(
+			if (numero <= lista[i]) then(
+				lista_temporal: endcons(lista[i] ,lista_temporal)
+			)else(
+				res:endcons(lista_temporal, res),
+				lista_temporal:[lista[i]]
+			),
+			numero:lista[i]
+		),
+		res:endcons(lista_temporal, res),
+		print("natural: ", res)
+	)
+);
+
+
+naturalSort(lista):= block(
+	[res],
+	if (length(lista) <= 1) then
+		lista
+	else(
+		lista_natural: natural(lista),
+		res: first(lista_natural),
+		for i: 2 thru length(lista_natural) do(
+			res: merge(res, lista_natural[i]),
+			print("Line: ", res)
+		),
+		print("Final result: ", res)
+	)
+);
