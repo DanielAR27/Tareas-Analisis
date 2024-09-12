@@ -141,4 +141,13 @@ naturalSort(lista):= block(.................................................... 
 		),
 		print("Resultado final: ", res) ............................ 1
 	)
+	
+Como se puede observar, el naturalSort funciona mediante el uso de un for en el cual se hace una 
+llamada a merge, el for se itera n-1  veces y el merge se usa constantemente para reasignar
+el valor del resultado. 
+
+Por otra parte, el for llama varias veces a merge por lo que se expresaría
+de la siguiente manera: (n-1) * (3*n + 2) en donde el producto de ambas da una expresión
+cuadrática y por tanto se llega a la conclusión de que el big-oh del natural sort es: O(n^2)
+
 );*/
