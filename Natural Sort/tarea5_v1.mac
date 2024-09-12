@@ -1,0 +1,80 @@
+lista : [38, 27, 43, 3, 9, 82, 10];
+
+/* Merge recibe dos listas ordenadas y produce una nueva lista ordendada,
+ donde la lista1 tiene n1 elementos, y lista2 tiene n2 elementos */
+																		 t(0) = 1
+merge(lista1, lista2):= block( ......................................... t(n) = t(n - 1) + 3
+	if lista1 = [] then													 t(n) = 3*n + 1
+																		 O(n) con n = n1 + n2
+		lista2 .............................................. 1
+	elseif lista2=[] then
+		lista1 .............................................. 1
+	elseif (first(lista1) <= first(lista2)) then
+		cons(first(lista1), merge(rest(lista1), lista2)) .... t(n - 1) + 3
+	else
+		cons(first(lista2), merge(lista1, rest(lista2))) .... t(n - 1) + 3
+);
+
+
+natural(lista) := block(................................................. T(n) = 3n + 2
+																		 
+	[res, lista_temporal, numero],
+	if lista = [] then
+		[] ............................................................ 1
+	elseif length(lista) = 1 then
+		[lista] ....................................................... 1
+	else(
+		res:[], .................................................... 1
+		numero : first(lista), ..................................... 1
+		lista_temporal: [numero], .................................. 1
+		/*Contemplando el hecho de la sumatoria comienza en dos se puede decir que el ciclo dura n-1*/
+		for i : 2 thru length(lista) do(............................ 3*(n-1)
+			if (numero <= lista[i]) then(
+				lista_temporal: endcons(lista[i], lista_temporal)... 1
+			)else(
+				res:endcons(lista_temporal, res),................... 1
+				lista_temporal:[lista[i]]........................... 1
+			),
+			numero:lista[i]......................................... 1 
+		),
+		res:endcons(lista_temporal, res),........................... 1
+		print("natural: ", res)..................................... 1
+	)
+);
+
+
+naturalSort(lista):= block(.................................................... T(n) = 3*n^2 - 2*n - 1 
+																		        O(n^2) 
+	[res],
+	if (length(lista) <= 1) then
+		lista....................................................... 1
+	else(
+		lista_natural: natural(lista),.............................. 3n - 2
+		res: first(lista_natural),.................................. 1
+		for i: 2 thru length(lista_natural) do(..................... (n - 1) * (3*n + 2) = 3 n^2 - n - 2
+			res: merge(res, lista_natural[i]),........... 3*n + 1
+			print("Línea: ", res) ....................... 1
+		),
+		print("Resultado final: ", res) ............................ 1
+	)
+);
+
+																	
+naturalSort(lista):= block(................................................. T(n) = T(n-1) + 3n + 1
+	if (length(lista) <= 1) then
+		lista....................................................... 1
+
+	else
+		naturalSortAux(............................................. T(n-1) + 3n + 1
+		[], natural(lista))
+);
+																			T(0) = 1
+naturalSortAux(res, lista) := block(....................................... T(n) = T(n-1) + 3*n + 1
+																			O(n^2)
+	if is(lista=[]) then
+		res.......................................................... 1
+	else
+		naturalSortAux(................................................ T(n-1) + 3*n + 1
+		merge(res, first(lista)),................................3*n + 1
+		rest(lista))
+);

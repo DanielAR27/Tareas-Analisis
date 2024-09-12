@@ -1,58 +1,143 @@
+/*Elaborado por:
+Daniel Alemán Ruiz (2023051957)
+Luis Meza Chavarría (2023800023)*/
+
+/*Lista de prueba.*/
 lista : [38, 27, 43, 3, 9, 82, 10];
 
+/*Merge: Dadas dos listas ordenadas, produce una nueva lista ordenada.*/
 merge(lista1, lista2):= block(
+	/*Si la primera lista se encuentra vacía, retorna la segunda lista.*/
 	if lista1 = [] then
 		lista2
+	/*Si la segunda lista se encuentra vacía, retorna la primera lista.*/
 	elseif lista2=[] then
 		lista1
+	/*Cuando el primer elemento de la lista1 es menor o igual que la segunda lista, se agrega
+	el primer elemento  de la primera lista al resultado del merge del resto de la lista uno con la lista dos.*/
 	elseif (first(lista1) <= first(lista2)) then
 		cons(first(lista1), merge(rest(lista1), lista2))
+	/*En caso contrario, se agrega el primer elemento de la segunda lista al resultado del merge de la lista 1 con el 
+	resto de la lista dos.*/
 	else
 		cons(first(lista2), merge(lista1, rest(lista2)))
 );
 
-partir(p, lista):=block(
-	[],
-	[firstn(lista,p),
-	rest(lista,p)]
-);
-
+/*Natural: Dada una lista, dividir en sublistas cada vez que un número no cumpla un patrón ascendente.*/
 natural(lista) := block(
 	[res, lista_temporal, numero],
+	/*El caso cero es cuando la lista se encuentra vacía.*/
 	if lista = [] then
 		[]
+	/*Cuando la lista solo tiene un elemento, se retorna una lista que contiene a la lista analizada.*/
 	elseif length(lista) = 1 then
 		[lista]
+	/*En caso contrario, se tendrá que dividir la lista en sublistas.*/
 	else(
+		/*Se van a guardar el resultado, el número se va a ir modificando así como la lista temporal.*/
 		res:[],
 		numero : first(lista),
 		lista_temporal: [numero],
 		for i : 2 thru length(lista) do(
+			/*Si el número en la posición actual de la lista es menor o igual que el elemento anterior,
+			se va a agregar ese elemento al final de la lista temporal.*/
 			if (numero <= lista[i]) then(
 				lista_temporal: endcons(lista[i] ,lista_temporal)
+			/*En caso contrario, el resultado se le agregará esa lista temporal y la lista temporal
+			comenzará a partir de ese elemento.*/
 			)else(
 				res:endcons(lista_temporal, res),
 				lista_temporal:[lista[i]]
 			),
+			/*El valor del número irá cambiando de manera constante.*/
 			numero:lista[i]
 		),
+		/*Al final, solo queda guardar el resultado de la última iteración.*/
 		res:endcons(lista_temporal, res),
 		print("natural: ", res)
 	)
 );
 
 
+/*Natural Sort: Dada una lista desordenada, dividirá la lista en sublistas para posteriormente utilizar
+merge y ordenar toda la lista.*/
 naturalSort(lista):= block(
 	[res],
+	/*En caso de que la lista este vacía o solo tenga un elemento, se retorna la lista.*/
 	if (length(lista) <= 1) then
 		lista
+	/*En caso contrario, se tendrá que iterar para ordenar la lista.*/
 	else(
+		/*Se llama a la función natural y el resultado se guarda en una lista aparte*/
 		lista_natural: natural(lista),
+		/*Al resultado, se le agregará el primer elemento de la lista natural.*/
 		res: first(lista_natural),
+		/*Se itera n-1 veces la longitud de la lista natural.*/
 		for i: 2 thru length(lista_natural) do(
+			/*El resultado es modificado constantemente haciendo merge por cada una de las sublistas
+			de la lista natural.*/
 			res: merge(res, lista_natural[i]),
+			/*Se va imprimiendo cada linea.*/
 			print("Line: ", res)
 		),
+		/*Se imprime el resultado final.*/
 		print("Final result: ", res)
 	)
 );
+
+/*
+merge(lista1, lista2):= block( ......................................... t(n) = t(n - 1) + 3
+	if lista1 = [] then													 t(n) = 3*n + 1
+																		 O(n) con n = n1 + n2
+		lista2 .............................................. 1
+	elseif lista2=[] then
+		lista1 .............................................. 1
+	elseif (first(lista1) <= first(lista2)) then
+		cons(first(lista1), merge(rest(lista1), lista2)) .... t(n - 1) + 3
+	else
+		cons(first(lista2), merge(lista1, rest(lista2))) .... t(n - 1) + 3
+);
+
+
+natural(lista) := block(................................................. T(n) = 3n + 2
+																		 
+	[res, lista_temporal, numero],
+	if lista = [] then
+		[] ............................................................ 1
+	elseif length(lista) = 1 then
+		[lista] ....................................................... 1
+	else(
+		res:[], .................................................... 1
+		numero : first(lista), ..................................... 1
+		lista_temporal: [numero], .................................. 1
+		for i : 2 thru length(lista) do(............................ 3*(n-1)
+			if (numero <= lista[i]) then(
+				lista_temporal: endcons(lista[i], lista_temporal)... 1
+			)else(
+				res:endcons(lista_temporal, res),................... 1
+				lista_temporal:[lista[i]]........................... 1
+			),
+			numero:lista[i]......................................... 1 
+		),
+		res:endcons(lista_temporal, res),........................... 1
+		print("natural: ", res)..................................... 1
+	)
+);
+
+
+naturalSort(lista):= block(.................................................... T(n) = 3*n^2 - 2*n - 2 + 3n + 2 + 1
+																				T(n) = 3*n^2 -2*n + 1
+																				O(n^2)
+	[res],
+	if (length(lista) <= 1) then
+		lista....................................................... 1
+	else(
+		lista_natural: natural(lista),.............................. 3n + 2
+		res: first(lista_natural),.................................. 1
+		for i: 2 thru length(lista_natural) do(..................... (n - 1) * (3*n + 2) = 3 n^2 - n - 2
+			res: merge(res, lista_natural[i]),........... 3*n + 1
+			print("Línea: ", res) ....................... 1
+		),
+		print("Resultado final: ", res) ............................ 1
+	)
+);*/
