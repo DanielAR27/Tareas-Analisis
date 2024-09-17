@@ -1,0 +1,136 @@
+/*Física: lista
+ADT (Abstract data type): Heap
+
+Elaborado por:
+Daniel Alemán Ruiz (2023051957)
+Luis Meza Chavarría (2023800023)*/
+
+/*Swap: Dada una lista y dos índices cualesquiera, intercambia los elementos en las posiciones
+solicitadas y luego retorna la lista modificada.*/
+swap(lista, index1, index2) := block(
+	[tmp],
+	tmp : lista[index1],
+	lista[index1]: lista[index2],
+	lista[index2]: tmp,
+	lista
+);
+
+/*Get Biggest Son: Dado un heap y la posición de sus hijos, verifica en cual de esas posiciones
+se encuentra el hijo mayor.*/
+getBiggestSon(heap, leftSon, rightSon) := block(
+	[biggest_son],
+	/*Si el hijo izquierdo es menor, se asigna el hijo derecho como el mayor.*/
+	if (heap[leftSon] < heap[rightSon]) then(
+		biggest_son: rightSon
+	)else(
+	/*En caso contrario, se asigna el hijo izquierdo como el mayor.*/
+		biggest_son: leftSon
+	),
+	/*Se retorna el hijo mayor.*/
+	biggest_son
+);
+
+/*Insert Heap: Inserta un elemento en un heap.*/
+insertHeap(element, heap) := block(
+	[position, parent_position],
+	/*Si el heap se encuentra vacío, simplemente se le agrega el elemento y se retorna.*/
+	if heap = [] then
+		[element]
+	/*En caso contrario, se tendrá que ver como proceder con la inserción.*/
+	else(
+		/*Se agrega temporalmente el elemento al final del heap.*/
+		heap: endcons(element, heap),
+		/*Se obtiene la posición del elemento.*/
+		position : length(heap),
+		/*Se obtiene la posición del padre mediante la función piso.*/
+		parent_position : floor(length(heap)/2),
+		/*Se itera siempre que no se encuentre en la raíz y además el elemento sea mayor que el padre.*/
+		while (first(heap) # element and element > heap[parent_position]) do(
+			/*Se cambian los elementos del padre y el hijo.*/
+			heap: swap(heap, position, parent_position),
+			/*La posición ahora será la posición de quien anteriormente fue su padre.*/
+			position:parent_position,
+			/*La posición del padre se calculará mediante la función piso.*/
+			parent_position: floor(position/2)
+		),
+		heap
+	)
+);
+
+/*Delete Heap: Borra un elemento del heap.*/
+deleteHeap(heap) := block(
+	[position, res, previous_root, biggest_son],
+	/*Si el heap se encuentra vacío, se retorna vacío.*/
+	if heap = [] then
+		[]
+	/*Si el heap solo posee un elemento, el primer elemento será ese único elemento y el otro será el heap vacío.*/
+	else if length(heap) = 1 then
+		[first(heap), []]
+	else(
+		/*Se comienza desde la primera posición.*/
+		position: 1,
+		/*Se borra el último elemento del heap y se guarda momentáneamente en el resultado.*/
+		res: delete(heap[length(heap)], heap),
+		/*La que será la raíz anterior, es el primer elemento del heap.*/
+		previous_root: first(heap),
+		/*Se cambia la raíz del resultado por el último elemento del heap.*/
+		res[1] : last(heap),
+		/*Itero cuando como mínimo tengo hijo izquierdo*/
+		while(2*position <= length(res)) do(
+			/*Si existe el hijo derecho, compare con ambos.*/
+			if (2*position + 1 <= length(res)) then(
+				/*Se obtiene cual es el hijo mayor.*/
+				biggest_son: getBiggestSon(res, 2*position, 2*position+1),
+				/*Si el elemento es menor que su hijo mayor entonces se intercambian.*/
+				if (res[position] < res[biggest_son]) then(
+					res:swap(res, position, biggest_son)
+				),
+				/*Se asigna como posición la posición del hijo mayor.*/
+				position : biggest_son
+			/*En caso contrario, existe únicamente el hijo izquierdo.*/
+			)else(
+				/*Sabemos que solo existe el hijo izquierdo por lo que si es menor que su único hijo entonces se intercambian.*/
+				if (res[position] < res[2*position]) then(
+					res: swap(res, position, 2*position)
+				),
+				/*Se asigna como posición la de su único hijo.*/
+				position : 2*position
+			)
+		),
+		/*Se retorna como resultado la que alguna vez fue la raíz del heap y el resultado del heap después del borrado.*/
+		[previous_root, res]
+	)
+);
+
+/*Heap Sort: Mecanismo de ordenamiento de listas basada en la estructura de un MaxHeap.*/
+heapSort(lista) := block(
+	[heap, res],
+	/*Tanto el heap como el resultado comenzaran estando vacíos.*/
+	heap:[],
+	res:[],
+	/*Primero insertamos todos los elementos en un max heap.*/
+	for i:1 thru length(lista) do(
+		print(heap),
+		heap: insertHeap(lista[i], heap)
+	),
+	print(heap),
+	print("-----"),
+	/*Luego iremos sacando todos los elementos mediante el borrado hasta dar con la lista ordenada.*/
+	while heap # [] do(
+		print(heap),
+		res: cons(first(deleteHeap(heap)), res),
+		heap : second(deleteHeap(heap))
+	),
+	print(heap),
+	print("El resultado es: ",  res)
+);
+
+/*
+Función de ayuda: Borrar después
+inserting(lista) := block(
+	[],
+	res:[],
+	for i:1 thru length(lista) do(
+		res: insertHeap(lista[i], res)
+	)
+);*/
