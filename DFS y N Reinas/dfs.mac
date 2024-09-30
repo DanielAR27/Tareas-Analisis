@@ -1,0 +1,165 @@
+/*Elaborado por:
+Daniel Alemán Ruiz (2023051957)
+Luis Meza Chavarría (2023800023)*/
+
+/*Imprimir Tabla: Imprime una tabla con una lista. Nota: Borrar luego.*/
+imprimirTabla(n, lista) := block(
+  [i, j, fila],
+  /* Iteramos sobre las filas */
+  for i:1 thru n do (
+    fila: [],
+    /* Iteramos sobre las columnas */
+    for j:1 thru n do (
+      /* Si el par [i, j] está en la lista, imprimimos "R", de lo contrario "x" */
+      if member([i, j], lista) then
+        printf(true, "R ")
+      else
+        printf(true, "x ")
+    ),
+    /* Salto de línea después de cada fila */
+    printf(true, "~%")
+  )
+);
+
+/*Es diagonal: Verifica si una posición de una reina es diagonal de otra..*/
+esDiagonal(reina1, reina2) := block(
+	return (abs(first(reina1) - first(reina2)) = abs(second(reina1) - second(reina2)))
+);
+
+/*Comparte Diagonal: Verifica si para una reina, las demás comparten diagonal.*/
+comparteDiagonal(reinaCheck, reinas) := block(
+	if reinas = [] then
+		false
+	else(
+		if esDiagonal(reinaCheck, first(reinas)) then
+			true
+		else
+			comparteDiagonal(reinaCheck, rest(reinas))
+	)
+);
+
+/*Comparte Fila: Verifica si para una reina, las demás comparten fila.*/
+comparteFila(reinaCheck, reinas) := block(
+	if reinas = [] then
+		false
+	else(
+		if first(reinaCheck) = first(first(reinas)) then
+			true
+		else
+			comparteFila(reinaCheck, rest(reinas))
+	)
+);
+
+/*Comparte Columna: Verifica si para una reina, las demás comparten columna.*/
+comparteColumna(reinaCheck, reinas) := block(
+	if reinas = [] then
+		false
+	else(
+		if second(reinaCheck) = second(first(reinas)) then
+			true
+		else
+			comparteColumna(reinaCheck, rest(reinas))
+	)
+);
+
+/*Vecinos: Dado un tamaño "n" verifica cuales son los vecinos para una reina.*/
+vecinos(n, reina) := block(
+  [fila],
+  fila : first(reina) + 1,
+  if fila > n then
+    []
+  else
+    map(lambda([i], [fila, i]), create_list(i, i, 1, n))
+);
+
+/*Vecinos No Atacan: Encuentra los vecinos que no atacan.*/
+vecinosNoAtacan(vecinos, reinas, resultado) := block(
+	if vecinos = [] then
+		resultado
+	else(
+		if comparteDiagonal(first(vecinos), reinas) then
+			vecinosNoAtacan(rest(vecinos), reinas, resultado)
+		else if comparteColumna(first(vecinos), reinas) then
+			vecinosNoAtacan(rest(vecinos), reinas, resultado)
+		else if comparteFila(first(vecinos), reinas) then
+			vecinosNoAtacan(rest(vecinos), reinas, resultado)
+		else if	member(first(vecinos), reinas) then
+			vecinosNoAtacan(rest(vecinos), reinas, resultado)
+		else
+			vecinosNoAtacan(rest(vecinos), reinas, endcons(first(vecinos), resultado))
+	)
+);
+
+/*Vecinos Extender: Extiende para todos los vecinos y encuentra todos los que no atacan.*/
+vecinosExtender(n, reinas, resultado, iterador) := block(
+	if iterador > length(reinas) then
+		resultado
+	else(
+		vecinosExtender(n,
+			reinas,
+			append(resultado, vecinosNoAtacan(vecinos(n, part(reinas, iterador)),reinas, [])),
+			iterador+1)		
+	)
+);
+
+/*Extender: Extiende según un número "n" de tablero y las posiciones de las reinas.*/
+extender(n, reinas) := block(
+	if reinas = [] then
+		[]
+	else
+		extenderAux(reinas, vecinosExtender(n, reinas, [], 1), [])
+);
+
+/*Extender Aux: Función auxiliar para extender.*/
+extenderAux(reinas, vecinosRevisados, resultado) := block(
+  /* Si no hay más vecinos por revisar, devolvemos el resultado acumulado */
+  if vecinosRevisados = [] then
+    resultado
+  else (
+    /* Agregamos al resultado una nueva lista que incluye las reinas más el primer vecino */
+    extenderAux(reinas, rest(vecinosRevisados), append(resultado, [append(reinas, [first(vecinosRevisados)])]))
+  )
+);
+
+/*Prof: Busca la única solución disponible para las N reinas usando backtracking.*/
+prof(n) := block(
+   [ruta],
+   ruta: map(lambda([i], [[1, i]]), makelist(i, i, 1, n)),
+   profAux(n, ruta)
+);
+
+/*ProfAux: Función auxiliar para prof.*/
+profAux(n, ruta):=block(
+   if ruta=[] then
+	return([])
+   else if n = length(first(ruta)) then
+	(first(ruta))                     
+   else(
+      newRuta: extender(n, first(ruta)),
+      newRuta: append(newRuta, rest(ruta)),
+      profAux(n, newRuta)
+   )
+);
+
+/*ProfTodas: Busca todas las soluciones disponibles para las N reinas usando backtracking.*/
+profTodas(n):=block(
+	[ruta],
+	ruta: map(lambda([i], [[1, i]]), makelist(i, i, 1, n)),
+	profTodasAux(n, ruta, [])
+);
+
+/*ProfTodasAux: Función auxiliar para profTodas.*/
+profTodasAux(largo, ruta, soluciones) := block(
+   if ruta = [] then
+      soluciones
+   else if largo = length(first(ruta)) then
+      profTodasAux(largo, rest(ruta), append(soluciones, [first(ruta)]))
+   else (
+      newRuta: extender(largo, first(ruta)),
+      newRuta: append(newRuta, rest(ruta)),
+      profTodasAux(largo, newRuta, soluciones)
+   )
+);
+
+
+
