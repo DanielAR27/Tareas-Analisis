@@ -2,25 +2,6 @@
 Daniel Alemán Ruiz (2023051957)
 Luis Meza Chavarría (2023800023)*/
 
-/*Imprimir Tabla: Imprime una tabla con una lista. Nota: Borrar luego.*/
-imprimirTabla(n, lista) := block(
-  [i, j, fila],
-  /* Iteramos sobre las filas */
-  for i:1 thru n do (
-    fila: [],
-    /* Iteramos sobre las columnas */
-    for j:1 thru n do (
-      /* Si el par [i, j] está en la lista, imprimimos "R", de lo contrario "x" */
-      if member([i, j], lista) then
-        printf(true, "R ")
-      else
-        printf(true, "x ")
-    ),
-    /* Salto de línea después de cada fila */
-    printf(true, "~%")
-  )
-);
-
 /*Es diagonal: Verifica si una posición de una reina es diagonal de otra..*/
 esDiagonal(reina1, reina2) := block(
 	return (abs(first(reina1) - first(reina2)) = abs(second(reina1) - second(reina2)))
