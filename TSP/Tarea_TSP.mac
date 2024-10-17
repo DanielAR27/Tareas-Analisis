@@ -1,0 +1,175 @@
+/*Elaborado por:
+Daniel Alemán Ruiz (2023051957)
+Luis Meza Chavarría (2023800023)*/
+
+/*Borrar: Elimina un elemento de una lista.*/
+borrar(ele, lista):= block(
+    delete(ele, lista)
+);
+
+/*Permutar: Dada una lista de n elementos, obtiene las n! permutaciones.*/
+permutar(lista):= block(
+    if (lista = []) then
+        []
+    elseif (length(lista) = 1) then
+        [lista]
+    else
+		apply(append,map(lambda([i], map(lambda([p],cons(i,p)),
+		permutar(borrar(i,lista)))),
+		lista)
+		)
+);
+
+/*Get Vecinos: Obtiene los vecinos de un nodo dado un grafo, excluyendo el nodo origen. */
+getVecinos(origen, grafo) := block(
+    [vecinos],
+    vecinos : [],
+    for nodo in grafo do (
+        if first(nodo) = origen then (
+            /* Recorre la lista de vecinos y excluye el nodo igual al origen */
+            for par in second(nodo) do (
+                if first(par) # origen then (
+                    vecinos : endcons(first(par), vecinos)
+                )
+            )
+        )
+    ),
+    return(vecinos)
+);
+
+/*Get Rutas: Obtiene todas las rutas posibles desde un origen en un grafo.*/
+getRutas(origen, grafo) := block(
+    [vecinos, rutasSinOrigen, rutasCompletas],
+    vecinos : getVecinos(origen, grafo),
+    rutasSinOrigen : permutar(vecinos),
+    rutasCompletas : [],
+    for ruta in rutasSinOrigen do (
+        rutasCompletas : endcons(cons(origen, endcons(origen, ruta)), rutasCompletas)
+    ),
+    return(rutasCompletas)
+);
+
+
+/*GetVecinoValor: Obtiene el costo de transporte de un nodo origen a un nodo vecino dado un grafo.*/
+getVecinoValor(origen, vecino, grafo) := block(
+    [resultado],
+    /* Recorre el grafo buscando el nodo de origen */
+    for nodo in grafo do (
+        if first(nodo) = origen then (
+            /* Recorre la lista de vecinos del nodo de origen */
+            for par in second(nodo) do (
+                if first(par) = vecino then (
+                    resultado : second(par),
+                    return(resultado) /* Termina el ciclo cuando encuentra el vecino */
+                )
+            )
+        )
+    ),
+    return(resultado)
+);
+
+/*CalcularValorRuta: Dada una ruta, calcula su valor y verifica que la arista exista en caso de error.*/
+calcularValorRuta(ruta, grafo) := block(
+    [valor_total, nodo_actual, nodo_siguiente, arista_valor],
+    valor_total : 0,
+    for i : 1 thru length(ruta) - 1 do (
+        nodo_actual : ruta[i],
+        nodo_siguiente : ruta[i+1],
+        arista_valor : getVecinoValor(nodo_actual, nodo_siguiente, grafo),
+        if arista_valor # false then (
+            valor_total : valor_total + arista_valor
+        )
+        else (
+            /* Si no se encuentra la arista, mostrar un mensaje de error */
+            print("Error: no se encontró la arista de ", nodo_actual, " a ", nodo_siguiente),
+            return(false) /* Termina si hay un error */
+        )
+    ),
+    return(valor_total)
+);
+
+/*Get Rutas Con Valores: Dado un grafo y un origen, obtiene las rutas con los respectivos valores del nodo dado.*/
+getRutasConValores(origen, grafo) := block(
+    [rutasCompletas, rutasConValores],
+    rutasCompletas : getRutas(origen, grafo),
+    rutasConValores : [],
+    for ruta in rutasCompletas do (
+        rutasConValores : endcons([ruta, calcularValorRuta(ruta, grafo)], rutasConValores)
+    ),
+    return(rutasConValores)
+);
+
+/*tspPermu: Algoritmo Exhaustivo para obtener las soluciones del TSP.*/
+tspPermu(origen, grafo) := block(
+    [rutasConValores, costoMinimo, rutasOptimas],
+    /* Obtener todas las rutas con sus valores */
+    rutasConValores : getRutasConValores(origen, grafo),
+    /* Encontrar el costo mínimo usando apply */
+    costoMinimo : apply(min, map(second, rutasConValores)),
+    /* Seleccionar todas las rutas con el costo mínimo */
+    rutasOptimas : [],
+    for rutaValor in rutasConValores do (
+        if second(rutaValor) = costoMinimo then (
+            rutasOptimas : endcons(rutaValor, rutasOptimas)
+        )
+    ),
+    return(rutasOptimas)
+);
+
+/*GetVecinosConValor: Obtener los vecinos con sus valores desde el grafo. */
+getVecinosConValor(nodo, grafo) := block(
+    [vecinos],
+    vecinos : [],
+    for par in grafo do (
+        if first(par) = nodo then (
+            vecinos : second(par)
+        )
+    ),
+    return(vecinos)
+);
+
+/* ObtenerMenorRuta: Obtener la ruta de menor costo, puede recurrir a un proceso recursivo de ser necesario. */
+obtenerMenorRuta(rutas, vecinosVisitados):=block(
+	menorRutaGeneral: rutas[1],
+	for i:1 thru length(rutas) do (
+		if menorRutaGeneral[2] > rutas[i][2] and not member(rutas[i][1], vecinosVisitados) then (
+			menorRutaGeneral: rutas[i]
+			)
+	),
+	if member(menorRutaGeneral[1], vecinosVisitados) then (
+		rutas: delete(menorRutaGeneral, rutas),
+		menorRutaGeneral: obtenerMenorRuta(rutas, vecinosVisitados)
+	),
+	return(menorRutaGeneral)
+);
+
+/*getIndiceGrafo: Obtener el índice de un nodo dentro del grafo.*/
+getIndiceGrafo(nodo, grafo):=block(
+	for i:1 thru length(grafo) do (
+		if first(grafo[i]) = nodo then (
+			return(i)
+		)
+	)
+);
+
+/*tspGreedy: Algoritmo Greedy para obtener las soluciones del TSP.*/
+tspGreedy(origen, grafo):=block(
+	/* Se tiene una lista con los nodos recorridos. Inicialmente esta lista comienza con el origen. */
+	[vecinosVisitados: [origen], costoMinimo: 0, vecino: origen, indiceActual:0],
+	/* La condición de parada se va a dar dado que el grafo está completamente conectado.*/
+	while length(vecinosVisitados) < length(grafo) do (
+		/*Se obtiene cual es el índice actual correspondiente al vecino que se itera.*/
+		indiceActual: getIndiceGrafo(vecino, grafo),
+		/*Se obtiene el vecino cuya ruta corresponde al valor más pequeño.*/
+		proximoVecino: obtenerMenorRuta(grafo[indiceActual][2], vecinosVisitados),
+		/* Se agrega el nodo a la lista de nodos recorridos. */
+		vecinosVisitados: append(vecinosVisitados, [proximoVecino[1]]),
+		/*Se obtiene el costo total a manera de que se itera y se repite hasta tener todos los nodos en la lista.*/
+		costoMinimo: costoMinimo + proximoVecino[2],
+		vecino: proximoVecino[1]
+	),
+	/*Finalmente, se agrega el costo de regreso al nodo inicial. */
+	costoMinimo: costoMinimo + getVecinoValor(vecino, origen, grafo),
+	vecinosVisitados: append(vecinosVisitados, [origen]),
+	return([vecinosVisitados, costoMinimo])
+);
