@@ -1,0 +1,91 @@
+/* Ejemplo de uso */
+
+objetos2 : [[w, [70,1]], [g, [60,1]], [n, [90,2]], [b, [90,4]], [s, [80,1]]];
+
+objetos3: [ 
+[a, [10, 2]],
+[b, [20, 3]],
+[c, [50, 4]],
+[d, [60, 5]]
+];
+
+
+crearMatriz(n, objetos) := block(
+    [resultado, lista],
+    
+    /* Crear la matriz con el encabezado de las columnas */
+    resultado : [cons(xx, makelist(i, i, 1, n))],
+    
+    /* Iterar sobre cada objeto */
+    for obj in objetos do (
+        /* Crear una lista con el nombre del objeto */
+        lista : [first(obj)],
+       
+		
+        /* Agregar n veces [0, []] a la lista */
+        for i:1 thru n do (
+            lista : endcons([0, []], lista)
+        ),
+        
+        /* Agregar la fila completa al resultado */
+        resultado : endcons(lista, resultado)
+    ),
+    
+    /* Devolver la matriz generada */
+    resultado
+);
+
+ks(n, objetos) := block(
+    /* Declarar variables locales */
+    [matriz, objetos_longitud, par, ganancia_objeto, peso_objeto, 
+    anterior_existe, ganancia_existe, precio_anterior, precio_ganancia,
+    max_notFitting, max_Fitting, valor_anterior, valor_ganancia],
+
+    /* Inicializar la matriz */
+    matriz: crearMatriz(n, objetos),
+    objetos_longitud: length(objetos),
+
+    /* Imprimir la matriz inicial para depuración */
+    /*print("matriz inicial:", matriz),*/
+    
+    /* Iterar sobre las filas */
+    for i:2 thru objetos_longitud + 1 do (
+        par : objetos[i - 1], /* Obtener el par correspondiente */
+        ganancia_objeto: first(second(par)),
+        peso_objeto: second(second(par)), /* Obtener el peso del objeto. */
+        
+        /* Iterar sobre las columnas de la matriz */
+        for j:2 thru n + 1 do (
+            anterior_existe : false,
+            ganancia_existe : false,
+
+            /* Evitar recalcular elementos de la matriz */
+            valor_anterior : if i - 1 <= 1 then 0 else first(matriz[i - 1][j]),
+            valor_ganancia : if (i - 1 <= 1 or j - peso_objeto <= 1) then ganancia_objeto else ganancia_objeto + first(matriz[i - 1][j - peso_objeto]),
+
+            /* Determinar si el objeto cabe en la mochila */
+            if (j - 1 < peso_objeto) then (
+                max_notFitting : max(0, valor_anterior),
+                anterior_existe : (i - 1 > 1),
+                if anterior_existe and max_notFitting = valor_anterior then (
+                    matriz[i][j] : [max_notFitting, second(matriz[i - 1][j])]
+                )
+            ) else (
+                max_Fitting : max(valor_anterior, valor_ganancia),
+                ganancia_existe : (i - 1 > 1) and (j - peso_objeto > 1),
+
+                /* Si la ganancia es mayor, actualiza la matriz */
+                if ganancia_existe and max_Fitting = valor_ganancia then (
+                    matriz[i][j] : [max_Fitting, append(second(matriz[i - 1][j - peso_objeto]), [first(par)])]
+                ) else if max_Fitting = ganancia_objeto then (
+                    matriz[i][j] : [max_Fitting, [first(par)]]
+                ) else if max_Fitting = valor_anterior then (
+                    matriz[i][j] : [max_Fitting, second(matriz[i - 1][j])]
+                )
+            )
+        )
+    ),
+    
+    /* Devolver la matriz final */
+    apply(matrix, matriz)
+);
