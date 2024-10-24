@@ -1,0 +1,111 @@
+/*Elaborado por:
+Daniel Alemán Ruiz (2023051957)
+Luis Meza Chavarría (2023800023)*/
+
+/*Nota: En caso de asignar "objetos" con nombre "l" o un nombre contenido dentro de la lista
+Es importante ejecutar el comando kill(all) o utilizar el nombre "objetos" para la lista a probar.*/
+
+/*Crear Matriz: Inicializa una matriz de tamaño "n" con los objetos solicitados.*/
+crearMatriz(n, objetos) := block(
+    [resultado, lista],
+    
+    /* Crear la matriz con el encabezado de las columnas */
+    resultado : [cons(xx, makelist(i, i, 1, n))],
+    
+    /* Iterar sobre cada objeto */
+    for obj in objetos do (
+        /* Crear una lista con el nombre del objeto */
+        lista : [first(obj)],
+       
+		
+        /* Agregar n veces [0, []] a la lista */
+        for i:1 thru n do (
+            lista : endcons([0, []], lista)
+        ),
+        
+        /* Agregar la fila completa al resultado */
+        resultado : endcons(lista, resultado)
+    ),
+    
+    /* Devolver la matriz generada */
+    resultado
+);
+
+/*KS: Función Knapsack*/
+ks(n, objetos) := block(
+    /* Declarar variables locales */
+    [matriz, objetos_longitud, par, ganancia_objeto, peso_objeto, 
+    anterior_existe, ganancia_existe, precio_anterior, precio_ganancia,
+    max_notFitting, max_Fitting, valor_anterior, valor_ganancia],
+    matriz: crearMatriz(n, objetos),
+    objetos_longitud: length(objetos),
+
+    /* Iterar sobre las filas */
+    for i:2 thru objetos_longitud + 1 do (
+        par : objetos[i - 1], /* Obtener el par correspondiente */
+        ganancia_objeto: first(second(par)),
+        peso_objeto: second(second(par)), /* Obtener el peso del objeto. */
+        
+        /* Iterar sobre las columnas de la matriz */
+        for j:2 thru n + 1 do (
+            /* Mostrar los valores de la matriz y los índices */
+            /* Si el peso de la columna es menor que el peso del objeto, no cabe en la mochila */
+            if (j - 1 < peso_objeto) then (
+				anterior_existe: false,
+                /* Calcular el elemento mat[i-1][j] */
+                
+                /* Si la fila corresponde a la fila cero (pues la fila uno en realidad contiene basura), entonces se asigna 0 como precio anterior */
+                if (i - 1 <= 1) then
+                    precio_anterior : 0
+                /* Si no, entonces se obtiene el precio del elemento anterior */
+                else(
+                    precio_anterior : first(matriz[i - 1][j]),
+					anterior_existe:true
+				),
+
+                max_notFitting : max(0, precio_anterior),
+				
+                /* Si el máximo corresponde al valor del precio anterior, se agrega */
+				if anterior_existe then
+					if max_notFitting = first(matriz[i - 1][j]) then
+						matriz[i][j] : [max_notFitting, second(matriz[i - 1][j])]
+                   
+            ) else (
+				anterior_existe: false,
+				ganancia_existe: false,
+				
+                /* Si la fila corresponde a la fila cero (pues la fila uno en realidad contiene basura), entonces se asigna 0 como precio anterior */
+                if (i - 1 <= 1) then
+                    precio_anterior : 0
+                /* Si no, entonces se obtiene el precio del elemento anterior */
+                else(
+                    precio_anterior : first(matriz[i - 1][j]),
+					anterior_existe: true
+				),
+				
+                if (i - 1 <= 1 or j - peso_objeto <= 1) then
+                    precio_ganancia : ganancia_objeto
+                else(
+                    precio_ganancia : ganancia_objeto + first(matriz[i - 1][j - peso_objeto]),
+					ganancia_existe: true
+				),
+
+                max_Fitting : max(precio_anterior, precio_ganancia),
+				
+                if ganancia_existe then
+					if max_Fitting = ganancia_objeto +  first(matriz[i - 1][j - peso_objeto]) then
+                    matriz[i][j] : [max_Fitting, append(second(matriz[i - 1][j - peso_objeto]), [first(par)])],
+
+                if max_Fitting = ganancia_objeto then
+                    matriz[i][j] : [max_Fitting, [first(par)]],
+
+				if anterior_existe then(
+					if max_Fitting = first(matriz[i - 1][j]) then
+						matriz[i][j] : [max_Fitting, second(matriz[i - 1][j])]
+				)
+            )
+        )
+    ),
+	
+	apply(matrix, matriz)
+);

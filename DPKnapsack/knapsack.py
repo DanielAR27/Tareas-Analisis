@@ -51,11 +51,12 @@ def knapsack(items, capacity):
     return result
 
 # Lista de items
-items = [
-    ('a', [10, 2]),
-    ('b', [20, 3]),
-    ('c', [50, 4]),
-    ('d', [60, 5])
+items = [ 
+("w", [70,1]),
+("g", [60,1]),
+("n", [90,2]),
+("b", [90,4]),
+("s", [80,1])
 ]
 
 items2 = [ 
@@ -64,6 +65,14 @@ items2 = [
     ('l', [2000,3]),
     ('i', [2000,1])
 ]
+
+items3 = [ 
+("a", [10, 2]),
+("b", [20, 3]),
+("c", [50, 4]),
+("d", [60, 5])
+]
+
 
 
 
@@ -85,7 +94,7 @@ def print_knapsack_table(result):
 
 # Generar ítems aleatorios y mostrarlos en formato Maxima
 # Cuantos items quiere, peso máximo de precio, peso máximo de mochila.
-random_items = generate_random_items(5, 1000, 8)
+random_items = generate_random_items(6, 1000, 8)
 # imprimir en formato maxima.
 maxima_format_output = knapsack_maxima_format(random_items)
 
@@ -99,5 +108,5 @@ print(maxima_format_output, "\n")
 print("Resultado: ")
 # Ejecutar el knapsack y mostrar el resultado
 #encontrar knapsack con la lista generada e inserte de cuantas columnas.
-result = knapsack(random_items, 5)
+result = knapsack(random_items, 4)
 print_knapsack_table(result)
